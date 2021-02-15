@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"github.com/gin-gonic/gin"
 	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -36,7 +37,7 @@ func ConvertByte2String(byte []byte, charset Charset) string {
 	return str
 }
 
-func cmdRun(name string, args []string) string {
+func cmdRun(name string, args []string) []byte {
 	cmd := exec.Command(name, args...)
 	cmd.Stdin = strings.NewReader("")
 	var out bytes.Buffer
@@ -46,7 +47,7 @@ func cmdRun(name string, args []string) string {
 		log.Fatal(err)
 	}
 
-	return ConvertByte2String(out.Bytes(), GB18030)
+	return out.Bytes()
 }
 
 func resp(ctx *gin.Context, str string) {
@@ -77,15 +78,22 @@ func main()  {
 		  	return
 		}
 
-		output := cmdRun(
-			"F:\\Python\\Kronos\\venv\\Scripts\\python.exe",
-			[]string{
-				"F:\\Python\\Kronos\\entry.py",
-				"--params=proxy_url=http://localhost:8080" + ctx.Request.RequestURI,
-			})
+		pathName := Md5([]byte(ctx.Request.RequestURI)) + ".txt"
 
-		print(output)
-		resp(ctx, output)
+		if PathExists(pathName) && Expire(pathName, 3600) {
+			output := cmdRun(
+				"F:\\Python\\Kronos\\venv\\Scripts\\python.exe",
+				[]string{
+					"F:\\Python\\Kronos\\entry.py",
+					"--params=proxy_url=http://localhost:8080" + ctx.Request.RequestURI,
+				})
+
+			_ = ioutil.WriteFile(pathName, output, 0777)
+		}
+
+		output, _ := ioutil.ReadFile(pathName)
+
+		resp(ctx, ConvertByte2String(output, UTF8))
 	})
 
 	r.Run("0.0.0.0:8081")
