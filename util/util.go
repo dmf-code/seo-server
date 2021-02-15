@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"os"
-	"runtime"
 	"syscall"
 	"time"
 )
@@ -30,15 +29,17 @@ func Expire(path string, sec int64) bool {
 	fileInfo, _ := os.Stat(path)
 
 	var lastWriteTime int64
-	
-	if runtime.GOOS == "windows" {
-		fileSys := fileInfo.Sys().(*syscall.Win32FileAttributeData)
-		nanoseconds := fileSys.LastWriteTime.Nanoseconds() // 返回的是纳秒
-		lastWriteTime = int64(nanoseconds/1e9) //秒
-	} else {
-		fileSys := fileInfo.Sys().(*syscall.Stat_t)
-		lastWriteTime = int64(fileSys.Mtim/1e9)
-	}
+
+
+	// windows
+	fileSys := fileInfo.Sys().(*syscall.Win32FileAttributeData)
+	nanoseconds := fileSys.LastWriteTime.Nanoseconds() // 返回的是纳秒
+	lastWriteTime = int64(nanoseconds/1e9) //秒
+
+	// linux
+	//fileSys := fileInfo.Sys().(*syscall.Stat_t)
+	//lastWriteTime = int64(fileSys.Mtim.Sec)
+
 
 	now := time.Now().Unix()
 

@@ -80,8 +80,7 @@ func main()  {
 		}
 
 		pathName := "cache/" + util.Md5([]byte(ctx.Request.RequestURI)) + ".txt"
-		println(util.PathExists(pathName))
-		println(util.Expire(pathName, 3600))
+
 		if !util.PathExists(pathName) || util.Expire(pathName, 3600) {
 			output := cmdRun(
 				"F:\\Python\\Kronos\\venv\\Scripts\\python.exe",
