@@ -1,4 +1,4 @@
-package main
+package util
 
 import (
 	"crypto/md5"
@@ -27,10 +27,15 @@ func PathExists(path string) (isExist bool) {
 
 func Expire(path string, sec int64) bool {
 	fileInfo, _ := os.Stat(path)
+
 	fileSys := fileInfo.Sys().(*syscall.Win32FileAttributeData)
+
+	fileSys = fileInfo.Sys().(*syscall.Win32FileAttributeData)
 	nanoseconds := fileSys.LastWriteTime.Nanoseconds() // 返回的是纳秒
-	lastWriteTime := nanoseconds/1e9 //秒
+	lastWriteTime := int64(nanoseconds/1e9) //秒
+
 	now := time.Now().Unix()
+
 	if now - lastWriteTime >= sec {
 		return true
 	}

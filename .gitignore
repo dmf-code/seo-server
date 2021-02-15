@@ -6,3 +6,4 @@
 /**/gopkg.in
 *.log
 /**/storages
+/**/cache/

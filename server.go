@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
+	"seo-server/util"
 	"strings"
 	"golang.org/x/text/encoding/simplifiedchinese"
 )
@@ -78,9 +79,10 @@ func main()  {
 		  	return
 		}
 
-		pathName := Md5([]byte(ctx.Request.RequestURI)) + ".txt"
-
-		if PathExists(pathName) && Expire(pathName, 3600) {
+		pathName := "cache/" + util.Md5([]byte(ctx.Request.RequestURI)) + ".txt"
+		println(util.PathExists(pathName))
+		println(util.Expire(pathName, 3600))
+		if !util.PathExists(pathName) || util.Expire(pathName, 3600) {
 			output := cmdRun(
 				"F:\\Python\\Kronos\\venv\\Scripts\\python.exe",
 				[]string{
@@ -88,7 +90,12 @@ func main()  {
 					"--params=proxy_url=http://localhost:8080" + ctx.Request.RequestURI,
 				})
 
-			_ = ioutil.WriteFile(pathName, output, 0777)
+			err := ioutil.WriteFile(pathName, output, 0777)
+
+			if err != nil {
+				println(err)
+			}
+
 		}
 
 		output, _ := ioutil.ReadFile(pathName)
